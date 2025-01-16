@@ -14,12 +14,15 @@ package tinyuart is
   -- 8 - eight data bits
   -- N - no parity bit,
   -- 1 - one stop bit.
+  --
+  -- The user must provide correct value for the CYCLES_PER_BAUD.
+  -- Use the following formula for calculation: (clock frequency) / (baudrate).
   type transmitter_t is record
     -- Configuration elements
     CYCLES_PER_BAUD : positive; -- Number of clock cycles per single baud
     PREFIX : string; -- Optional prefix used in report messages
     -- Output elements
-    ibyte_ready : std_logic;
+    ibyte_ready : std_logic; -- Input byte ready handshake signal
     tx : std_logic; -- Serial tx output
     -- Internal elements
     state   : state_t;
@@ -34,8 +37,8 @@ package tinyuart is
     CYCLES_PER_BAUD : positive;
     PREFIX          : string := "tinyuart: transmitter: ";
     -- Output elements
-    ibyte_ready   : std_logic := '0';
-    tx      : std_logic := '1';
+    ibyte_ready : std_logic := '0';
+    tx          : std_logic := '1';
     -- Internal elements
     state   : state_t := IDLE;
     byte    : std_logic_vector(7 downto 0) := (others => '-');
@@ -59,7 +62,7 @@ package body tinyuart is
   function init (
     CYCLES_PER_BAUD : positive;
     PREFIX          : string := "tinyuart: transmitter: ";
-    ibyte_ready   : std_logic := '0';
+    ibyte_ready : std_logic := '0';
     tx      : std_logic := '1';
     state   : state_t := IDLE;
     byte    : std_logic_vector(7 downto 0) := (others => '-');

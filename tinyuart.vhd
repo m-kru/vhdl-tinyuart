@@ -20,7 +20,7 @@ package tinyuart is
   type transmitter_t is record
     -- Configuration elements
     CYCLES_PER_BAUD : positive; -- Number of clock cycles per single baud
-    PREFIX : string; -- Optional prefix used in report messages
+    REPORT_PREFIX   : string;   -- Optional prefix used in report messages
     -- Output elements
     ibyte_ready : std_logic; -- Input byte ready handshake signal
     tx : std_logic; -- Serial tx output
@@ -35,7 +35,7 @@ package tinyuart is
   function init (
     -- Configuration elements
     CYCLES_PER_BAUD : positive;
-    PREFIX          : string := "tinyuart: transmitter: ";
+    REPORT_PREFIX   : string := "tinyuart: transmitter: ";
     -- Output elements
     ibyte_ready : std_logic := '0';
     tx          : std_logic := '1';
@@ -68,7 +68,7 @@ package tinyuart is
   type receiver_t is record
     -- Configuration elements
     CYCLES_PER_BAUD : positive; -- Number of clock cycles per single baud
-    PREFIX : string; -- Optional prefix used in report messages
+    REPORT_PREFIX   : string;   -- Optional prefix used in report messages
     -- Output elements
     obyte        : std_logic_vector(7 downto 0); -- Output byte
     obyte_valid  : std_logic; -- Output byte valid handshake signal
@@ -83,7 +83,7 @@ package tinyuart is
   function init (
     -- Configuration elements
     CYCLES_PER_BAUD : positive;
-    PREFIX          : string := "tinyuart: receiver: ";
+    REPORT_PREFIX   : string := "tinyuart: receiver: ";
     -- Output elements
     obyte        : std_logic_vector(7 downto 0) := (others => '-');
     obyte_valid  : std_logic := '0';
@@ -110,7 +110,7 @@ package body tinyuart is
 
   function init (
     CYCLES_PER_BAUD : positive;
-    PREFIX          : string := "tinyuart: transmitter: ";
+    REPORT_PREFIX   : string := "tinyuart: transmitter: ";
     ibyte_ready : std_logic := '0';
     tx      : std_logic := '1';
     state   : state_t := IDLE;
@@ -120,7 +120,7 @@ package body tinyuart is
   ) return transmitter_t is
     constant t : transmitter_t := (
       CYCLES_PER_BAUD => CYCLES_PER_BAUD,
-      PREFIX          => PREFIX,
+      REPORT_PREFIX   => REPORT_PREFIX,
       ibyte_ready     => ibyte_ready,
       state           => state,
       byte            => byte,
@@ -143,7 +143,7 @@ package body tinyuart is
     t.tx := '1';
 
     if t.ibyte_ready and ibyte_valid then
-      report t.PREFIX & "starting " & ibyte'image & " transmission";
+      report t.REPORT_PREFIX & "starting b""" & to_string(ibyte) & """ transmission";
 
       t.tx := '0'; -- Start bit
       t.ibyte_ready := '0';
@@ -166,7 +166,7 @@ package body tinyuart is
       t.cnt := t.CYCLES_PER_BAUD;
 
       if t.bit_cnt = 8 then
-        report t.PREFIX & t.byte'image & " transmission finished";
+        report t.REPORT_PREFIX & " b""" &  to_string(t.byte) & """ transmission finished";
         t.state := IDLE;
       else
         if t.bit_cnt = 8 then
@@ -193,9 +193,8 @@ package body tinyuart is
     variable t : transmitter_t := transmitter;
   begin
     case t.state is
-    when IDLE         => t := clock_idle         (t, ibyte, ibyte_valid);
-    when TRANSMISSION => t := clock_transmission (t);
-    when others => report "unimplemented state " & state_t'image(t.state) severity failure;
+      when IDLE         => t := clock_idle         (t, ibyte, ibyte_valid);
+      when TRANSMISSION => t := clock_transmission (t);
     end case;
     return t;
   end function;
@@ -207,7 +206,7 @@ package body tinyuart is
   function init (
     -- Configuration elements
     CYCLES_PER_BAUD : positive;
-    PREFIX          : string := "tinyuart: receiver: ";
+    REPORT_PREFIX   : string := "tinyuart: receiver: ";
     -- Output elements
     obyte        : std_logic_vector(7 downto 0) := (others => '-');
     obyte_valid  : std_logic := '0';
@@ -219,7 +218,7 @@ package body tinyuart is
   ) return receiver_t is
     constant r : receiver_t := (
       CYCLES_PER_BAUD => CYCLES_PER_BAUD,
-      PREFIX          => PREFIX,
+      REPORT_PREFIX   => REPORT_PREFIX,
       obyte           => obyte,
       obyte_valid     => obyte_valid,
       stop_bit_err    => stop_bit_err,
@@ -238,11 +237,11 @@ package body tinyuart is
   begin
     r.obyte_valid := '0';
     r.stop_bit_err := '0';
-    r.cnt := integer(real(r.CYCLES_PER_BAUD) * real(1.5));
+    r.cnt := r.CYCLES_PER_BAUD + r.CYCLES_PER_BAUD / 2;
     r.bit_cnt := 0;
 
     if rx = '0' then
-      report r.PREFIX & "starting reception";
+      report r.REPORT_PREFIX & "starting reception";
       r.state := TRANSMISSION;
     end if;
 
@@ -263,7 +262,7 @@ package body tinyuart is
     else
       if r.cnt = 0 then
         if r.bit_cnt = 8 then
-          report r.PREFIX & "received " & r.obyte'image & ", stop bit " & rx'image;
+          report r.REPORT_PREFIX & "received b""" & to_string(r.obyte) & """, stop bit '" & to_string(rx) & "'";
 
           if rx = '0' then
             r.stop_bit_err := '1';
@@ -292,9 +291,8 @@ package body tinyuart is
     variable r : receiver_t := receiver;
   begin
     case r.state is
-    when IDLE         => r := clock_idle         (r, rx);
-    when TRANSMISSION => r := clock_transmission (r, rx, obyte_ready);
-    when others => report "unimplemented state " & state_t'image(r.state) severity failure;
+      when IDLE         => r := clock_idle         (r, rx);
+      when TRANSMISSION => r := clock_transmission (r, rx, obyte_ready);
     end case;
     return r;
   end function;

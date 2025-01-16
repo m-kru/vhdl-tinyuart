@@ -15,8 +15,8 @@ package tinyuart is
   -- N - no parity bit,
   -- 1 - one stop bit.
   --
-  -- The user must provide correct value for the CYCLES_PER_BAUD.
-  -- Use the following formula for calculation: (clock frequency) / (baudrate).
+  -- The user must provide the correct value for the CYCLES_PER_BAUD.
+  -- Use the following calculation formula: (clock frequency) / (baudrate).
   type transmitter_t is record
     -- Configuration elements
     CYCLES_PER_BAUD : positive; -- Number of clock cycles per single baud
@@ -58,13 +58,13 @@ package tinyuart is
   -- N - no parity bit,
   -- 1 - one stop bit.
   --
-  -- The user must provide correct value for the CYCLES_PER_BAUD.
-  -- Use the following formula for calculation: (clock frequency) / (baudrate).
+  -- The user must provide the correct value for the CYCLES_PER_BAUD.
+  -- Use the following calculation formula: (clock frequency) / (baudrate).
   --
   -- The stop_bit_err signals that sampled stop bit value was different than '1'.
-  -- The signal is cleared after successful output byte handshake.
+  -- The signal is cleared after a successful output byte handshake.
   -- If you want to count the number of stop bit errors, then connect this signal
-  -- to a rising/falling edge detector and count the edges.
+  -- to a rising edge detector and count the edges.
   type receiver_t is record
     -- Configuration elements
     CYCLES_PER_BAUD : positive; -- Number of clock cycles per single baud
@@ -93,7 +93,6 @@ package tinyuart is
     cnt     : natural := 0;
     bit_cnt : natural := 0
   ) return receiver_t;
-
 
   -- Clocks receiver.
   function clock (

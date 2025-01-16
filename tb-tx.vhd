@@ -18,7 +18,7 @@ architecture test of tb_tx is
   signal t : transmitter_t := init(CYCLES_PER_BAUD);
 
   signal ibyte : std_logic_vector(7 downto 0) := b"11001010";
-  signal byte_in_valid : std_logic := '0';
+  signal ibyte_valid : std_logic := '0';
 
   signal rx : std_logic_vector(7 downto 0);
 
@@ -30,7 +30,7 @@ begin
   DUT : process (clk) is
   begin
     if rising_edge(clk) then
-      t <= clock(t, ibyte, byte_in_valid);
+      t <= clock(t, ibyte, ibyte_valid);
     end if;
   end process;
 
@@ -46,9 +46,9 @@ begin
         severity failure;
     end loop;
 
-    byte_in_valid <= '1';
-    wait until rising_edge(clk) and byte_in_valid = '1' and t.ibyte_ready = '1';
-    byte_in_valid <= '0';
+    ibyte_valid <= '1';
+    wait until rising_edge(clk) and ibyte_valid = '1' and t.ibyte_ready = '1';
+    ibyte_valid <= '0';
     wait for 2 * CLK_PERIOD;
 
     -- Start bit

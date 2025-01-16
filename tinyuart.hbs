@@ -26,5 +26,12 @@ namespace eval vhdl::tinyuart {
         hbs::Run
     }
 
+    # Loopback testbench
+    proc tb-loopback {} {
+        _tb "tb_loopback"
+        hbs::AddFile tb-loopback.vhd
+        hbs::Run
+    }
+
     hbs::Register
 }

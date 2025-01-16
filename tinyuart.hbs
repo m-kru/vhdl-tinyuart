@@ -1,0 +1,23 @@
+namespace eval vhdl::tinyuart {
+    proc src {} {
+        hbs::SetLib "tinyuart"
+        hbs::AddFile tinyuart.vhd
+    }
+
+    proc _tb {top} {
+      hbs::SetTool "nvc"
+      hbs::AddPostElabCb hbs::SetArgsPrefix "--messages=compact"
+      hbs::SetTop $top
+      src
+      hbs::SetLib ""
+    }
+
+    # Transmitter testbench.
+    proc tb-tx {} {
+        _tb "tb_tx"
+        hbs::AddFile tb-tx.vhd
+        hbs::run
+    }
+
+    hbs::Register
+}

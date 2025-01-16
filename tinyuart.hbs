@@ -12,11 +12,11 @@ namespace eval vhdl::tinyuart {
       hbs::SetLib ""
     }
 
-    # Transmitter testbench.
+    # Transmitter testbench
     proc tb-tx {} {
         _tb "tb_tx"
         hbs::AddFile tb-tx.vhd
-        hbs::run
+        hbs::Run
     }
 
     hbs::Register

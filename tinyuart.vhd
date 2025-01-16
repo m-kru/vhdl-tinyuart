@@ -25,15 +25,18 @@ package tinyuart is
     state   : state_t;
     byte    : std_logic_vector(7 downto 0); -- Byte latched for transmission
     cnt     : natural; -- General purpose counter
-    bit_cnt : natural range 0 to 9: -- Bit counter
+    bit_cnt : natural range 0 to 8; -- Bit counter
   end record;
 
   -- Initializes transmitter_t type.
   function init (
+    -- Configuration elements
     CYCLES_PER_BAUD : positive;
     PREFIX          : string := "tinyuart: transmitter: ";
+    -- Output elements
     byte_in_ready   : std_logic := '0';
-    tx      : std_logic := '-';
+    tx      : std_logic := '1';
+    -- Internal elements
     state   : state_t := IDLE;
     byte    : std_logic_vector(7 downto 0) := (others => '-');
     cnt     : natural := 0;
@@ -41,7 +44,7 @@ package tinyuart is
   ) return transmitter_t;
 
   function clock (
-    transmitter   : trnamistter_t;
+    transmitter   : transmitter_t;
     byte_in       : std_logic_vector(7 downto 0);
     byte_in_valid : std_logic
   ) return transmitter_t;
@@ -57,14 +60,15 @@ package body tinyuart is
     CYCLES_PER_BAUD : positive;
     PREFIX          : string := "tinyuart: transmitter: ";
     byte_in_ready   : std_logic := '0';
+    tx      : std_logic := '1';
     state   : state_t := IDLE;
     byte    : std_logic_vector(7 downto 0) := (others => '-');
-    tx      : std_logic := '-';
     cnt     : natural := 0;
     bit_cnt : natural := 0
   ) return transmitter_t is
-    constant t := transmitter_t (
+    constant t : transmitter_t := (
       CYCLES_PER_BAUD => CYCLES_PER_BAUD,
+      PREFIX          => PREFIX,
       byte_in_ready   => byte_in_ready,
       state           => state,
       byte            => byte,
@@ -78,18 +82,20 @@ package body tinyuart is
 
 
   function clock_idle (
-    transmitter   : trnamistter_t;
+    transmitter   : transmitter_t;
     byte_in       : std_logic_vector(7 downto 0);
     byte_in_valid : std_logic
-  ) return transmitter_ is
+  ) return transmitter_t is
     variable t : transmitter_t := transmitter;
   begin
     t.cnt := t.CYCLES_PER_BAUD;
-    t.bit_cnt := 9;
+    t.bit_cnt := 0;
+    t.tx := '1';
 
     if t.byte_in_ready and byte_in_valid then
-      t.tx := '0'; -- Generate start bit
+      t.tx := '0'; -- Start bit
       t.byte_in_ready := '0';
+      t.byte := byte_in;
       t.state := TRANSMISSION;
     else
       t.byte_in_ready := '1';
@@ -100,23 +106,23 @@ package body tinyuart is
 
 
   function clock_transmission (
-    transmitter   : trnamistter_t
+    transmitter : transmitter_t
   ) return transmitter_t is
     variable t : transmitter_t := transmitter;
   begin
     if t.cnt = 0 then
       t.cnt := t.CYCLES_PER_BAUD;
 
-      if t.bit_cnt = 0 then
+      if t.bit_cnt = 8 then
         t.state := IDLE;
       else
-        t.bit_cnt := t.bit_cnt - 1;
-
-        if t.bit_cnt == 0 then
+        if t.bit_cnt = 8 then
           t.tx := '1'; -- Stop bit
         else
-          t.tx := t.byte(bit_cnt-1);
+          t.tx := t.byte(t.bit_cnt);
         end if;
+
+        t.bit_cnt := t.bit_cnt + 1;
       end if;
     else
       t.cnt := t.cnt - 1;
@@ -127,15 +133,15 @@ package body tinyuart is
 
 
   function clock (
-    transmitter   : trnamistter_t;
+    transmitter   : transmitter_t;
     byte_in       : std_logic_vector(7 downto 0);
     byte_in_valid : std_logic
-  ) return transmitter_ is
+  ) return transmitter_t is
     variable t : transmitter_t := transmitter;
   begin
     case t.state is
-    when IDLE         => clock_idle         (t, byte_in, byte_in_valid);
-    when TRANSMISSION => clock_transmission (t);
+    when IDLE         => t := clock_idle         (t, byte_in, byte_in_valid);
+    when TRANSMISSION => t := clock_transmission (t);
     when others => report "unimplemented state " & state_t'image(t.state) severity failure;
     end case;
     return t;

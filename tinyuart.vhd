@@ -46,10 +46,11 @@ package tinyuart is
     bit_cnt : natural := 0
   ) return transmitter_t;
 
+  -- Clocks transmitter.
   function clock (
     transmitter : transmitter_t;
-    ibyte       : std_logic_vector(7 downto 0);
-    ibyte_valid : std_logic
+    ibyte       : std_logic_vector(7 downto 0); -- Input byte
+    ibyte_valid : std_logic -- Input byte valid handshake signal
   ) return transmitter_t;
 
 end package;
@@ -96,6 +97,8 @@ package body tinyuart is
     t.tx := '1';
 
     if t.ibyte_ready and ibyte_valid then
+      report t.PREFIX & "starting " & ibyte'image & " transmission";
+
       t.tx := '0'; -- Start bit
       t.ibyte_ready := '0';
       t.byte := ibyte;
@@ -117,6 +120,7 @@ package body tinyuart is
       t.cnt := t.CYCLES_PER_BAUD;
 
       if t.bit_cnt = 8 then
+        report t.PREFIX & t.byte'image & " transmission finished";
         t.state := IDLE;
       else
         if t.bit_cnt = 8 then

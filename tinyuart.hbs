@@ -19,5 +19,12 @@ namespace eval vhdl::tinyuart {
         hbs::Run
     }
 
+    # Receiver testbench
+    proc tb-rx {} {
+        _tb "tb_rx"
+        hbs::AddFile tb-rx.vhd
+        hbs::Run
+    }
+
     hbs::Register
 }

@@ -17,7 +17,7 @@ architecture test of tb_tx is
 
   signal t : transmitter_t := init(CYCLES_PER_BAUD);
 
-  signal ibyte : std_logic_vector(7 downto 0) := b"11001010";
+  signal ibyte : std_logic_vector(7 downto 0) := b"01011001";
   signal ibyte_valid : std_logic := '0';
 
   signal rx : std_logic_vector(7 downto 0);
@@ -55,12 +55,13 @@ begin
     assert t.tx = '0'
       report "invalid start bit value, got " & t.tx'image & ", want '0'"
       severity failure;
+    wait for BAUDRATE_PERIOD;
 
     -- Byte
     for i in 0 to 7 loop
-      wait for BAUDRATE_PERIOD;
       report "sampling bit " & i'image & ": " & t.tx'image;
       rx(i) <= t.tx;
+      wait for BAUDRATE_PERIOD;
     end loop;
     wait for 0 ns;
     assert rx = ibyte

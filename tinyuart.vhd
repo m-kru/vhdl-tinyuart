@@ -28,7 +28,7 @@ package tinyuart is
     state   : state_t;
     byte    : std_logic_vector(7 downto 0); -- Byte latched for transmission
     cnt     : natural; -- General purpose counter
-    bit_cnt : natural range 0 to 8; -- Bit counter
+    bit_cnt : natural range 0 to 9; -- Bit counter
   end record;
 
   -- Initializes transmitter_t type.
@@ -165,7 +165,7 @@ package body tinyuart is
     if t.cnt = 0 then
       t.cnt := t.CYCLES_PER_BAUD;
 
-      if t.bit_cnt = 8 then
+      if t.bit_cnt = 9 then
         report t.REPORT_PREFIX & " b""" &  to_string(t.byte) & """ transmission finished";
         t.state := IDLE;
       else

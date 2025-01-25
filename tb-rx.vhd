@@ -36,6 +36,16 @@ begin
   end process;
 
 
+  Stop_Bit_Checker : process (clk) is
+  begin
+    if rising_edge(clk) then
+      assert r.stop_bit_err = '0'
+        report "invalid stop bit err value, got " & r.stop_bit_err'image & "want '1'"
+        severity failure;
+    end if;
+  end process;
+
+
   Main : process is
   begin
     wait for BAUDRATE_PERIOD;

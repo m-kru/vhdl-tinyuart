@@ -4,6 +4,9 @@
 
 library ieee;
   use ieee.std_logic_1164.all;
+  use ieee.numeric_std.all;
+  use ieee.math_real.ceil;
+  use ieee.math_real.log2;
 
 package tinyuart is
 
@@ -27,7 +30,7 @@ package tinyuart is
     -- Internal elements
     state   : state_t;
     byte    : std_logic_vector(7 downto 0); -- Byte latched for transmission
-    cnt     : natural; -- General purpose counter
+    cnt     : unsigned; -- General purpose counter
     bit_cnt : natural range 0 to 9; -- Bit counter
   end record;
 
@@ -75,7 +78,7 @@ package tinyuart is
     stop_bit_err : std_logic; -- Stop bit error
     -- Internal elements
     state   : state_t;
-    cnt     : natural; -- General purpose counter
+    cnt     : unsigned; -- General purpose counter
     bit_cnt : natural range 0 to 8; -- Bit counter
   end record;
 
@@ -118,6 +121,7 @@ package body tinyuart is
     cnt     : natural := 0;
     bit_cnt : natural := 0
   ) return transmitter_t is
+    constant CNT_WIDTH : natural := integer(ceil(log2(real(CYCLES_PER_BAUD))));
     constant t : transmitter_t := (
       CYCLES_PER_BAUD => CYCLES_PER_BAUD,
       REPORT_PREFIX   => REPORT_PREFIX,
@@ -125,7 +129,7 @@ package body tinyuart is
       state           => state,
       byte            => byte,
       tx              => tx,
-      cnt             => cnt,
+      cnt             => to_unsigned(cnt, CNT_WIDTH),
       bit_cnt         => bit_cnt
     );
   begin return t; end function;
@@ -138,7 +142,7 @@ package body tinyuart is
   ) return transmitter_t is
     variable t : transmitter_t := transmitter;
   begin
-    t.cnt := t.CYCLES_PER_BAUD;
+    t.cnt := to_unsigned(t.CYCLES_PER_BAUD, t.cnt'length);
     t.bit_cnt := 0;
     t.tx := '1';
 
@@ -163,7 +167,8 @@ package body tinyuart is
     variable t : transmitter_t := transmitter;
   begin
     if t.cnt = 0 then
-      t.cnt := t.CYCLES_PER_BAUD;
+      t.cnt := to_unsigned(t.CYCLES_PER_BAUD, t.cnt'length);
+
 
       if t.bit_cnt = 9 then
         report t.REPORT_PREFIX & " b""" &  to_string(t.byte) & """ transmission finished";
@@ -216,6 +221,7 @@ package body tinyuart is
     cnt     : natural := 0;
     bit_cnt : natural := 0
   ) return receiver_t is
+    constant CNT_WIDTH : natural := integer(ceil(log2(real(CYCLES_PER_BAUD + CYCLES_PER_BAUD/2))));
     constant r : receiver_t := (
       CYCLES_PER_BAUD => CYCLES_PER_BAUD,
       REPORT_PREFIX   => REPORT_PREFIX,
@@ -223,7 +229,7 @@ package body tinyuart is
       obyte_valid     => obyte_valid,
       stop_bit_err    => stop_bit_err,
       state           => state,
-      cnt             => cnt,
+      cnt             => to_unsigned(cnt, CNT_WIDTH),
       bit_cnt         => bit_cnt
     );
   begin return r; end function;
@@ -237,7 +243,7 @@ package body tinyuart is
   begin
     r.obyte_valid := '0';
     r.stop_bit_err := '0';
-    r.cnt := r.CYCLES_PER_BAUD + r.CYCLES_PER_BAUD / 2;
+    r.cnt := to_unsigned(r.CYCLES_PER_BAUD + r.CYCLES_PER_BAUD/2, r.cnt'length);
     r.bit_cnt := 0;
 
     if rx = '0' then
@@ -273,7 +279,7 @@ package body tinyuart is
           r.bit_cnt := r.bit_cnt + 1;
         end if;
 
-        r.cnt := r.CYCLES_PER_BAUD;
+        r.cnt := to_unsigned(r.CYCLES_PER_BAUD, r.cnt'length);
       else
         r.cnt := r.cnt - 1;
       end if;

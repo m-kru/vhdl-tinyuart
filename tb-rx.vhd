@@ -17,7 +17,7 @@ architecture test of tb_rx is
 
   signal r : receiver_t := init(CYCLES_PER_BAUD);
 
-  signal ibyte : std_logic_vector(7 downto 0) := b"11100101";
+  signal ibyte : std_logic_vector(7 downto 0) := b"01100101";
   signal obyte : std_logic_vector(7 downto 0);
   signal obyte_ready : std_logic := '0';
 

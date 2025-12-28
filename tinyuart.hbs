@@ -1,7 +1,7 @@
 namespace eval vhdl::tinyuart {
   proc src {} {
-      hbs::SetLib "tinyuart"
-      hbs::AddFile tinyuart.vhd
+    hbs::SetLib "tinyuart"
+    hbs::AddFile tinyuart.vhd
   }
 
   proc _tb {top} {
@@ -9,26 +9,25 @@ namespace eval vhdl::tinyuart {
     hbs::AddPostElabCb hbs::SetArgsPrefix "--messages=compact"
     hbs::SetTop $top
     src
-    hbs::SetLib ""
     hbs::AddFile [string map {_ -} $top].vhd # Replace '_' with '-' in file name.
   }
 
   # Transmitter testbench
   proc tb-tx {} {
-      _tb "tb_tx"
-      hbs::Run
+    _tb "tb_tx"
+    hbs::Run
   }
 
   # Receiver testbench
   proc tb-rx {} {
-      _tb "tb_rx"
-      hbs::Run
+    _tb "tb_rx"
+    hbs::Run
   }
 
   # Loopback testbench
   proc tb-loopback {} {
-      _tb "tb_loopback"
-      hbs::Run
+    _tb "tb_loopback"
+    hbs::Run
   }
 
   hbs::Register

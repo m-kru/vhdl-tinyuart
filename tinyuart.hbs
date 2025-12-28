@@ -1,37 +1,35 @@
 namespace eval vhdl::tinyuart {
-    proc src {} {
-        hbs::SetLib "tinyuart"
-        hbs::AddFile tinyuart.vhd
-    }
+  proc src {} {
+      hbs::SetLib "tinyuart"
+      hbs::AddFile tinyuart.vhd
+  }
 
-    proc _tb {top} {
-      hbs::SetTool "nvc"
-      hbs::AddPostElabCb hbs::SetArgsPrefix "--messages=compact"
-      hbs::SetTop $top
-      src
-      hbs::SetLib ""
-    }
+  proc _tb {top} {
+    hbs::SetTool "nvc"
+    hbs::AddPostElabCb hbs::SetArgsPrefix "--messages=compact"
+    hbs::SetTop $top
+    src
+    hbs::SetLib ""
+    hbs::AddFile [string map {_ -} $top].vhd # Replace '_' with '-' in file name.
+  }
 
-    # Transmitter testbench
-    proc tb-tx {} {
-        _tb "tb_tx"
-        hbs::AddFile tb-tx.vhd
-        hbs::Run
-    }
+  # Transmitter testbench
+  proc tb-tx {} {
+      _tb "tb_tx"
+      hbs::Run
+  }
 
-    # Receiver testbench
-    proc tb-rx {} {
-        _tb "tb_rx"
-        hbs::AddFile tb-rx.vhd
-        hbs::Run
-    }
+  # Receiver testbench
+  proc tb-rx {} {
+      _tb "tb_rx"
+      hbs::Run
+  }
 
-    # Loopback testbench
-    proc tb-loopback {} {
-        _tb "tb_loopback"
-        hbs::AddFile tb-loopback.vhd
-        hbs::Run
-    }
+  # Loopback testbench
+  proc tb-loopback {} {
+      _tb "tb_loopback"
+      hbs::Run
+  }
 
-    hbs::Register
+  hbs::Register
 }

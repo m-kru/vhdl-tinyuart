@@ -9,7 +9,8 @@ namespace eval vhdl::tinyuart {
     hbs::AddPostElabCb hbs::SetArgsPrefix "--messages=compact"
     hbs::SetTop $top
     src
-    hbs::AddFile [string map {_ -} $top].vhd # Replace '_' with '-' in file name.
+    hbs::SetLib ""
+    hbs::AddFile [string map {_ -} $top].vhd ;# Replace '_' with '-' in file name.
   }
 
   # Transmitter testbench

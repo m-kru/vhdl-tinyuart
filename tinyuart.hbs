@@ -1,4 +1,9 @@
 namespace eval vhdl::tinyuart {
+  set doc "A very tiny UART transmitter and receiver with the fixed 8N1 configuration:
+  - 8 - eight data bits
+  - N - no parity bit,
+  - 1 - one stop bit."
+
   proc src {} {
     hbs::SetLib "ltinyuart"
     hbs::AddFile tinyuart.vhd
@@ -6,7 +11,7 @@ namespace eval vhdl::tinyuart {
 
   proc _tb {top} {
     hbs::SetTool "nvc"
-    hbs::AddPostElabCb hbs::SetArgsPrefix "--messages=compact"
+    hbs::AddPostElabCb hbs::SetArgPrefix "--messages=compact"
     hbs::SetTop $top
     src
     hbs::SetLib ""
@@ -31,5 +36,5 @@ namespace eval vhdl::tinyuart {
     hbs::Run
   }
 
-  hbs::Register
+  hbs::Register $doc
 }
